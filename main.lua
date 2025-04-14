@@ -1,5 +1,11 @@
 function love.load()
-  anim8 = require("./libraries/anim8/anim8")
+  love.window.setMode(1000, 768)
+
+  anim8 = require("libraries/anim8/anim8")
+  sti = require("libraries/Simple-Tiled-Implementation/sti")
+  cameraFile = require("libraries/hump/camera")
+
+  cam = cameraFile()
 
   sprites = {}
   sprites.playerSheet = love.graphics.newImage("sprites/playerSheet.png")
@@ -11,7 +17,7 @@ function love.load()
   animations.jump = anim8.newAnimation(grid("1-7", 2), 0.05)
   animations.run = anim8.newAnimation(grid("1-15", 3), 0.05)
 
-  wf = require("./libraries/windfield/windfield/")
+  wf = require("libraries/windfield/windfield/")
   world = wf.newWorld(0, 800, false)
   world:setQueryDebugDrawing(true)
 
@@ -19,25 +25,32 @@ function love.load()
   world:addCollisionClass("Player" --[[, { ignores = { "Platform" } } ]])
   world:addCollisionClass("Danger")
 
-  require("./player")
+  require("player")
 
-  platform = world:newRectangleCollider(250, 400, 300, 100, { collision_class = "Platform" })
-  platform:setType("static")
+  -- danger = world:newRectangleCollider(0, 550, 800, 50, { collision_class = "Danger" })
+  -- danger:setType("static")
 
-  danger = world:newRectangleCollider(0, 550, 800, 50, { collision_class = "Danger" })
-  danger:setType("static")
+  platforms = {}
+
+  loadMap()
 end
 
 function love.update(dt)
   --update
   world:update(dt)
+  gameMap:update(dt)
   playerUpdate(dt)
+
+  local px, _ = player:getPosition()
+  cam:lookAt(px, love.graphics.getHeight() / 2)
 end
 
 function love.draw()
-  --draw
-  world:draw() -- Don't want this enabled in actual game but helpful in debugging
+  cam:attach()
+  gameMap:drawLayer(gameMap.layers["Tile Layer 1"])
+  -- world:draw() -- Don't want this enabled in actual game but helpful in debugging
   drawPlayer()
+  cam:detach()
 end
 
 function love.keypressed(key)
@@ -54,5 +67,20 @@ function love.mousepressed(x, y, button)
     for _, c in ipairs(colliders) do
       c:destroy()
     end
+  end
+end
+
+function spawnPlatform(x, y, width, height)
+  if width > 0 and height > 0 then
+    local platform = world:newRectangleCollider(x, y, width, height, { collision_class = "Platform" })
+    platform:setType("static")
+    table.insert(platforms, platform)
+  end
+end
+
+function loadMap()
+  gameMap = sti("maps/level1.lua")
+  for _, obj in pairs(gameMap.layers["Platforms"].objects) do
+    spawnPlatform(obj.x, obj.y, obj.width, obj.height)
   end
 end
