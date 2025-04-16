@@ -84,7 +84,7 @@ function love.draw()
   love.graphics.draw(sprites.background, 0, 0)
   cam:attach()
   gameMap:drawLayer(gameMap.layers["Tile Layer 1"])
-  world:draw() -- Don't want this enabled in actual game but helpful in debugging
+  -- world:draw() -- Don't want this enabled in actual game but helpful in debugging
   drawPlayer()
   drawEnemies()
   cam:detach()
