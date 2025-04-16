@@ -36,7 +36,12 @@ function love.load()
 
   platforms = {}
 
-  loadMap()
+  flagX = 0
+  flagY = 0
+
+  currentLevel = "level1"
+
+  loadMap(currentLevel)
 end
 
 function love.update(dt)
@@ -48,6 +53,15 @@ function love.update(dt)
 
   local px, _ = player:getPosition()
   cam:lookAt(px, love.graphics.getHeight() / 2)
+
+  local colliders = world:queryCircleArea(flagX, flagY, 10, { "Player" })
+  if #colliders > 0 then
+    if currentLevel == "level1" then
+      loadMap("level2")
+    elseif currentLevel == "level2" then
+      loadMap("level1")
+    end
+  end
 end
 
 function love.draw()
@@ -64,6 +78,9 @@ function love.keypressed(key)
     if player.grounded then
       player:applyLinearImpulse(0, -4000)
     end
+  end
+  if key == "r" then
+    loadMap("level2")
   end
 end
 
@@ -84,12 +101,39 @@ function spawnPlatform(x, y, width, height)
   end
 end
 
-function loadMap()
-  gameMap = sti("maps/level1.lua")
+function destroyAll()
+  local i = #platforms
+  while i > -1 do
+    if platforms[i] ~= nil then
+      platforms[i]:destroy()
+    end
+    table.remove(platforms, i)
+    i = i - 1
+  end
+
+  local j = #enemies
+  while j > -1 do
+    if enemies[j] ~= nil then
+      enemies[j]:destroy()
+    end
+    table.remove(enemies, j)
+    j = j - 1
+  end
+end
+
+function loadMap(mapName)
+  currentLevel = mapName
+  destroyAll()
+  player:setPosition(300, 100)
+  gameMap = sti("maps/" .. mapName .. ".lua")
   for _, obj in pairs(gameMap.layers["Platforms"].objects) do
     spawnPlatform(obj.x, obj.y, obj.width, obj.height)
   end
   for _, obj in pairs(gameMap.layers["enemies"].objects) do
     spawnEnemey(obj.x, obj.y)
+  end
+  for _, obj in pairs(gameMap.layers["flag"].objects) do
+    flagX = obj.x
+    flagY = obj.y
   end
 end
