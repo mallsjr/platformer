@@ -18,6 +18,7 @@ function love.load()
   sprites = {}
   sprites.playerSheet = love.graphics.newImage("sprites/playerSheet.png")
   sprites.enemySheet = love.graphics.newImage("sprites/enemySheet.png")
+  sprites.background = love.graphics.newImage("sprites/background.png")
 
   local grid = anim8.newGrid(614, 564, sprites.playerSheet:getWidth(), sprites.playerSheet:getHeight())
   local enemyGrid = anim8.newGrid(100, 70, sprites.enemySheet:getWidth(), sprites.enemySheet:getHeight())
@@ -34,14 +35,14 @@ function love.load()
 
   world:addCollisionClass("Platform")
   world:addCollisionClass("Player" --[[, { ignores = { "Platform" } } ]])
-  world:addCollisionClass("Danger")
+  world:addCollisionClass("Danger", { ignores = { "Danger" } })
 
   require("player")
   require("enemy")
-  require("libraries.show")
+  require("libraries/show")
 
-  -- danger = world:newRectangleCollider(0, 550, 800, 50, { collision_class = "Danger" })
-  -- danger:setType("static")
+  danger = world:newRectangleCollider(-500, 800, 5000, 50, { collision_class = "Danger" })
+  danger:setType("static")
 
   platforms = {}
 
@@ -73,13 +74,14 @@ function love.update(dt)
   if #colliders > 0 then
     if saveData.currentLevel == "level1" then
       loadMap("level2")
-    elseif savaData.currentLevel == "level2" then
+    else
       loadMap("level1")
     end
   end
 end
 
 function love.draw()
+  love.graphics.draw(sprites.background, 0, 0)
   cam:attach()
   gameMap:drawLayer(gameMap.layers["Tile Layer 1"])
   world:draw() -- Don't want this enabled in actual game but helpful in debugging
@@ -141,8 +143,8 @@ function loadMap(mapName)
   saveData.currentLevel = mapName
   love.filesystem.write("data.lua", table.show(saveData, "saveData"))
   destroyAll()
-  player:setPosition(300, 100)
   gameMap = sti("maps/" .. mapName .. ".lua")
+
   for _, obj in pairs(gameMap.layers["Platforms"].objects) do
     spawnPlatform(obj.x, obj.y, obj.width, obj.height)
   end
@@ -153,4 +155,9 @@ function loadMap(mapName)
     flagX = obj.x
     flagY = obj.y
   end
+  for _, obj in pairs(gameMap.layers["start"].objects) do
+    playerStartX = obj.x
+    playerStartY = obj.y
+  end
+  player:setPosition(playerStartX, playerStartY)
 end
