@@ -285,37 +285,11 @@ return {
       properties = {},
       objects = {
         {
-          id = 12,
-          name = "",
-          type = "",
-          shape = "rectangle",
-          x = 1408,
-          y = 256,
-          width = 64,
-          height = 64,
-          rotation = 0,
-          visible = true,
-          properties = {}
-        },
-        {
           id = 13,
           name = "",
           type = "",
           shape = "rectangle",
           x = 768,
-          y = 384,
-          width = 64,
-          height = 64,
-          rotation = 0,
-          visible = true,
-          properties = {}
-        },
-        {
-          id = 14,
-          name = "",
-          type = "",
-          shape = "rectangle",
-          x = 512,
           y = 384,
           width = 64,
           height = 64,

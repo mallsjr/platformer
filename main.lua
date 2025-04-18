@@ -97,19 +97,19 @@ function love.keypressed(key)
       sounds.jump:play()
     end
   end
-  if key == "r" then
-    loadMap("level2")
-  end
+  -- if key == "r" then
+  --   loadMap("level2")
+  -- end
 end
 
-function love.mousepressed(x, y, button)
-  if button == 1 then
-    local colliders = world:queryCircleArea(x, y, 200, { "Platform", "Danger" })
-    for _, c in ipairs(colliders) do
-      c:destroy()
-    end
-  end
-end
+-- function love.mousepressed(x, y, button)
+--   if button == 1 then
+--     local colliders = world:queryCircleArea(x, y, 200, { "Platform", "Danger" })
+--     for _, c in ipairs(colliders) do
+--       c:destroy()
+--     end
+--   end
+-- end
 
 function spawnPlatform(x, y, width, height)
   if width > 0 and height > 0 then
