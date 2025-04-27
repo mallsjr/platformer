@@ -156,6 +156,15 @@ function destroyAll()
     table.remove(enemies, j)
     j = j - 1
   end
+
+  local c = #coins
+  while c > -1 do
+    if coins[c] ~= nil then
+      coins[c]:destroy()
+    end
+    table.remove(coins, c)
+    c = c - 1
+  end
 end
 
 function loadMap(mapName)
