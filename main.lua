@@ -1,5 +1,6 @@
 function love.load()
   love.window.setMode(1000, 768)
+  love.graphics.setDefaultFilter("nearest", "nearest")
 
   anim8 = require("libraries/anim8/anim8")
   sti = require("libraries/Simple-Tiled-Implementation/sti")
@@ -19,23 +20,27 @@ function love.load()
   sprites.playerSheet = love.graphics.newImage("sprites/playerSheet.png")
   sprites.enemySheet = love.graphics.newImage("sprites/enemySheet.png")
   sprites.background = love.graphics.newImage("sprites/background.png")
+  sprites.coinSheet = love.graphics.newImage("sprites/coin.png")
 
   local grid = anim8.newGrid(614, 564, sprites.playerSheet:getWidth(), sprites.playerSheet:getHeight())
   local enemyGrid = anim8.newGrid(100, 70, sprites.enemySheet:getWidth(), sprites.enemySheet:getHeight())
+  local coinGrid = anim8.newGrid(16, 16, sprites.coinSheet:getWidth(), sprites.coinSheet:getHeight())
 
   animations = {}
   animations.idle = anim8.newAnimation(grid("1-15", 1), 0.05)
   animations.jump = anim8.newAnimation(grid("1-7", 2), 0.05)
   animations.run = anim8.newAnimation(grid("1-15", 3), 0.05)
   animations.enemy = anim8.newAnimation(enemyGrid("1-2", 1), 0.03)
+  animations.coin = anim8.newAnimation(coinGrid("1-4", 1), 0.25)
 
   wf = require("libraries/windfield/windfield/")
   world = wf.newWorld(0, 800, false)
   world:setQueryDebugDrawing(true)
 
   world:addCollisionClass("Platform")
+  world:addCollisionClass("Coin")
   world:addCollisionClass("Player" --[[, { ignores = { "Platform" } } ]])
-  world:addCollisionClass("Danger", { ignores = { "Danger" } })
+  world:addCollisionClass("Danger", { ignores = { "Danger", "Coin" } })
 
   require("player")
   require("enemy")
@@ -45,6 +50,7 @@ function love.load()
   danger:setType("static")
 
   platforms = {}
+  coins = {}
 
   flagX = 0
   flagY = 0
@@ -66,6 +72,7 @@ function love.update(dt)
   gameMap:update(dt)
   playerUpdate(dt)
   updateEnemies(dt)
+  animations.coin:update(dt)
 
   local px, _ = player:getPosition()
   cam:lookAt(px, love.graphics.getHeight() / 2)
@@ -87,6 +94,11 @@ function love.draw()
   -- world:draw() -- Don't want this enabled in actual game but helpful in debugging
   drawPlayer()
   drawEnemies()
+
+  for _, c in ipairs(coins) do
+    local cx, cy = c:getPosition()
+    animations.coin:draw(sprites.coinSheet, cx, cy, nil, 2, 2, 16, 16)
+  end
   cam:detach()
 end
 
@@ -119,6 +131,13 @@ function spawnPlatform(x, y, width, height)
   end
 end
 
+function spawnCoin(x, y, width, height)
+  if width > 0 and height > 0 then
+    local coin = world:newRectangleCollider(x, y, width, height, { collision_class = "Coin" })
+    table.insert(coins, coin)
+  end
+end
+
 function destroyAll()
   local i = #platforms
   while i > -1 do
@@ -147,6 +166,9 @@ function loadMap(mapName)
 
   for _, obj in pairs(gameMap.layers["Platforms"].objects) do
     spawnPlatform(obj.x, obj.y, obj.width, obj.height)
+  end
+  for _, obj in pairs(gameMap.layers["coins"].objects) do
+    spawnCoin(obj.x, obj.y, obj.width, obj.height)
   end
   for _, obj in pairs(gameMap.layers["enemies"].objects) do
     spawnEnemey(obj.x, obj.y)
