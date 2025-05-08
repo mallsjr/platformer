@@ -8,6 +8,7 @@ player.animation = animations.idle
 player.isMoving = false
 player.direction = 1
 player.grounded = true
+player.touching_coin = false
 
 function playerUpdate(dt)
   if player.body then
@@ -16,6 +17,14 @@ function playerUpdate(dt)
       player.grounded = true
     else
       player.grounded = false
+    end
+
+    -- coin collider
+    local coin_colliders = world:queryRectangleArea(player:getX() - 20, player:getY() + 50, 40, 100, { "Coin" })
+    if #coin_colliders > 0 then
+      player.touching_coin = true
+    else
+      player.touching_coin = false
     end
 
     player.isMoving = false

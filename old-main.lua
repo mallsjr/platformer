@@ -46,9 +46,7 @@ function love.load()
   require("enemy")
   require("libraries/show")
 
-  danger = world:newRectangleCollider(-500, 800, 5000, 50, {
-    collision_class = "Danger",
-  })
+  danger = world:newRectangleCollider(-500, 800, 5000, 50, { collision_class = "Danger" })
   danger:setType("static")
 
   platforms = {}
@@ -59,10 +57,6 @@ function love.load()
 
   saveData = {}
   saveData.currentLevel = "level1"
-
-  -- Initialize player score
-  playerScore = 0
-  font = love.graphics.newFont(48)
 
   if love.filesystem.getInfo("data.lua") then
     local data = love.filesystem.load("data.lua")
@@ -91,23 +85,6 @@ function love.update(dt)
       loadMap("level1")
     end
   end
-
-  -- Coin collection logic - using physics queries
-  for i = #coins, 1, -1 do
-    local coin = coins[i]
-    local coinX, coinY = coin:getPosition()
-
-    -- Check if player is colliding with coin
-    local playerColliders = world:queryRectangleArea(coinX - 8, coinY - 8, 16, 16, { "Player" })
-
-    if #playerColliders > 0 then
-      -- Player is touching the coin, collect it
-      playerScore = playerScore + 100
-      coin:destroy() -- Remove coin from physics world
-      table.remove(coins, i) -- Remove from coins table
-      -- You could add a sound effect here
-    end
-  end
 end
 
 function love.draw()
@@ -123,11 +100,6 @@ function love.draw()
     animations.coin:draw(sprites.coinSheet, cx, cy, nil, 2, 2, 16, 16)
   end
   cam:detach()
-
-  -- Draw player score in the top left corner
-  love.graphics.setColor(1, 1, 1) -- White color
-  love.graphics.setFont(font)
-  love.graphics.print("Score: " .. playerScore, 10, 10)
 end
 
 function love.keypressed(key)
@@ -137,13 +109,23 @@ function love.keypressed(key)
       sounds.jump:play()
     end
   end
+  -- if key == "r" then
+  --   loadMap("level2")
+  -- end
 end
+
+-- function love.mousepressed(x, y, button)
+--   if button == 1 then
+--     local colliders = world:queryCircleArea(x, y, 200, { "Platform", "Danger" })
+--     for _, c in ipairs(colliders) do
+--       c:destroy()
+--     end
+--   end
+-- end
 
 function spawnPlatform(x, y, width, height)
   if width > 0 and height > 0 then
-    local platform = world:newRectangleCollider(x, y, width, height, {
-      collision_class = "Platform",
-    })
+    local platform = world:newRectangleCollider(x, y, width, height, { collision_class = "Platform" })
     platform:setType("static")
     table.insert(platforms, platform)
   end
@@ -151,11 +133,7 @@ end
 
 function spawnCoin(x, y, width, height)
   if width > 0 and height > 0 then
-    local coin = world:newRectangleCollider(x, y, width, height, {
-      collision_class = "Coin",
-    })
-    coin:setType("static")
-    coin:setSensor(true) -- Make it a sensor so player passes through
+    local coin = world:newRectangleCollider(x, y, width, height, { collision_class = "Coin" })
     table.insert(coins, coin)
   end
 end
