@@ -19,14 +19,6 @@ function playerUpdate(dt)
       player.grounded = false
     end
 
-    -- coin collider
-    local coin_colliders = world:queryRectangleArea(player:getX() - 20, player:getY() + 50, 40, 100, { "Coin" })
-    if #coin_colliders > 0 then
-      player.touching_coin = true
-    else
-      player.touching_coin = false
-    end
-
     player.isMoving = false
     local px, _ = player:getPosition() -- putting py to _ because not used
     if love.keyboard.isDown("right") then
